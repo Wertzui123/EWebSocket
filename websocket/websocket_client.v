@@ -92,15 +92,15 @@ pub fn new_client(address string) !&Client {
 }
 
 // connect connects to remote websocket server
-pub fn (mut ws Client) connect() ? {
-	ws.assert_not_connected()?
+pub fn (mut ws Client) connect() ! {
+	ws.assert_not_connected()!
 	ws.set_state(.connecting)
 	ws.logger.info('connecting to host $ws.uri')
-	ws.conn = ws.dial_socket()?
+	ws.conn = ws.dial_socket()!
 	// Todo: make setting configurable
 	ws.conn.set_read_timeout(time.second * 30)
 	ws.conn.set_write_timeout(time.second * 30)
-	ws.handshake()?
+	ws.handshake() or { return err }
 	ws.set_state(.open)
 	ws.logger.info('successfully connected to host $ws.uri')
 	ws.send_open_event()
@@ -435,13 +435,13 @@ fn parse_uri(url string) !&Uri {
 
 // set_state sets current state of the websocket connection
 fn (mut ws Client) set_state(state State) {
-	lock  {
+	lock {
 		ws.state = state
 	}
 }
 
 // assert_not_connected returns error if the connection is not connected
-fn (ws Client) assert_not_connected() ? {
+fn (ws Client) assert_not_connected() ! {
 	match ws.state {
 		.connecting { return error('connect: websocket is connecting') }
 		.open { return error('connect: websocket already open') }
@@ -452,7 +452,7 @@ fn (ws Client) assert_not_connected() ? {
 
 // reset_state resets the websocket and initialize default settings
 fn (mut ws Client) reset_state() {
-	lock  {
+	lock {
 		ws.state = .closed
 		ws.ssl_conn = tlse.new_ssl_conn()
 		ws.flags = []
