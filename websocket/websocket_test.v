@@ -22,9 +22,9 @@ fn test_ws_ipv6() {
 		return
 	}
 	port := 30000 + rand.intn(1024) or { 0 }
-	go start_server(.ip6, port)
+	spawn start_server(.ip6, port)
 	time.sleep(500 * time.millisecond)
-	ws_test(.ip6, 'ws://localhost:$port') or { assert false }
+	ws_test(.ip6, 'ws://localhost:${port}') or { assert false }
 }
 
 // tests with internal ws servers
@@ -33,9 +33,9 @@ fn test_ws_ipv4() {
 		return
 	}
 	port := 30000 + rand.intn(1024) or { 0 }
-	go start_server(.ip, port)
+	spawn start_server(.ip, port)
 	time.sleep(500 * time.millisecond)
-	ws_test(.ip, 'ws://localhost:$port') or { assert false }
+	ws_test(.ip, 'ws://localhost:${port}') or { assert false }
 }
 
 fn start_server(family net.AddrFamily, listen_port int) ? {
@@ -67,7 +67,7 @@ fn start_server(family net.AddrFamily, listen_port int) ? {
 
 // ws_test tests connect to the websocket server from websocket client
 fn ws_test(family net.AddrFamily, uri string) ! {
-	eprintln('connecting to $uri ...')
+	eprintln('connecting to ${uri} ...')
 
 	mut test_results := WebsocketTestResults{}
 	mut ws := websocket.new_client(uri)!
@@ -76,13 +76,13 @@ fn ws_test(family net.AddrFamily, uri string) ! {
 		assert true
 	})
 	ws.on_error(fn (mut ws websocket.Client, err string) ? {
-		println('error: $err')
+		println('error: ${err}')
 		// this can be thrown by internet connection problems
 		assert false
 	})
 
 	ws.on_message_ref(fn (mut ws websocket.Client, msg &websocket.Message, mut res WebsocketTestResults) ? {
-		println('client got type: $msg.opcode payload:\n$msg.payload')
+		println('client got type: ${msg.opcode} payload:\n${msg.payload}')
 		if msg.opcode == .text_frame {
 			smessage := msg.payload.bytestr()
 			match smessage {
@@ -97,11 +97,11 @@ fn ws_test(family net.AddrFamily, uri string) ! {
 				}
 			}
 		} else {
-			println('Binary message: $msg')
+			println('Binary message: ${msg}')
 		}
 	}, test_results)
 	ws.connect() or { panic('fail to connect') }
-	go ws.listen()
+	spawn ws.listen()
 	text := ['a'].repeat(2)
 	for msg in text {
 		ws.write(msg.bytes(), .text_frame) or { panic('fail to write to websocket') }

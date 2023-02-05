@@ -19,15 +19,15 @@ fn htonl64(payload_len u64) []u8 {
 }
 
 // create_masking_key returs a new masking key to use when masking websocket messages
-fn create_masking_key() ?[]u8 {
-	mask_bit := u8(rand.intn(255)?)
+fn create_masking_key() ![]u8 {
+	mask_bit := u8(rand.intn(255)!)
 	buf := []u8{len: 4, init: `0`}
 	unsafe { C.memcpy(buf.data, &mask_bit, 4) }
 	return buf
 }
 
 // create_key_challenge_response creates a key challange response from security key
-fn create_key_challenge_response(seckey string) ?string {
+fn create_key_challenge_response(seckey string) !string {
 	if seckey.len == 0 {
 		return error('unexpected seckey lengt zero')
 	}
@@ -44,11 +44,11 @@ fn create_key_challenge_response(seckey string) ?string {
 }
 
 // get_nonce creates a randomized array used in handshake process
-fn get_nonce(nonce_size int) ?string {
+fn get_nonce(nonce_size int) !string {
 	mut nonce := []u8{len: nonce_size, cap: nonce_size}
 	alphanum := '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz'
 	for i in 0 .. nonce_size {
-		nonce[i] = alphanum[rand.intn(alphanum.len)?]
+		nonce[i] = alphanum[rand.intn(alphanum.len)!]
 	}
 	return unsafe { tos(nonce.data, nonce.len) }.clone()
 }

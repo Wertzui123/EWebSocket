@@ -29,7 +29,7 @@ fn (mut ws Client) socket_read(mut buffer []u8) !int {
 }
 
 // socket_read reads from socket into the provided byte pointer and length
-fn (mut ws Client) socket_read_ptr(buf_ptr &byte, len int) ?int {
+fn (mut ws Client) socket_read_ptr(buf_ptr &byte, len int) !int {
 	lock {
 		if ws.state in [.closed, .closing] || ws.conn.sock.handle <= 1 {
 			return error('socket_read_ptr: trying to read a closed socket')
@@ -49,7 +49,7 @@ fn (mut ws Client) socket_read_ptr(buf_ptr &byte, len int) ?int {
 			}
 		}
 	}
-	return none
+	return error('none')
 }
 
 // socket_write writes the provided byte array to the socket
@@ -89,7 +89,7 @@ fn (mut ws Client) shutdown_socket() ! {
 
 // dial_socket connects tcp socket and initializes default configurations
 fn (mut ws Client) dial_socket() !&net.TcpConn {
-	tcp_address := '$ws.uri.hostname:$ws.uri.port'
+	tcp_address := '${ws.uri.hostname}:${ws.uri.port}'
 	mut t := if ws.is_ssl {
 		tlse.create_tcp_conn_from_handle(ws.ssl_conn.connect(ws.uri.hostname, ws.uri.port.int()))
 	} else {

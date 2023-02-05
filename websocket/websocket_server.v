@@ -54,15 +54,15 @@ pub fn (mut s Server) set_ping_interval(seconds int) {
 
 // listen start listen and process to incoming connections from websocket clients
 pub fn (mut s Server) listen() ! {
-	s.logger.info('websocket server: start listen on port $s.port')
-	s.ls = net.listen_tcp(s.family, ':$s.port')!
+	s.logger.info('websocket server: start listen on port ${s.port}')
+	s.ls = net.listen_tcp(s.family, ':${s.port}')!
 	s.set_state(.open)
-	go s.handle_ping()
+	spawn s.handle_ping()
 	for {
 		mut c := s.accept_new_client() or { continue }
-		go s.serve_client(mut c)
+		spawn s.serve_client(mut c)
 	}
-	s.logger.info('websocket server: end listen on port $s.port')
+	s.logger.info('websocket server: end listen on port ${s.port}')
 }
 
 // Close closes server (not implemented yet)
@@ -76,7 +76,7 @@ fn (mut s Server) handle_ping() {
 	for s.state == .open {
 		time.sleep(s.ping_interval * time.second)
 		for i, _ in s.clients {
-			mut c := s.clients[i]
+			mut c := s.clients[i] or { continue }
 			if c.client.state == .open {
 				c.client.ping() or {
 					s.logger.debug('server-> error sending ping to client')
@@ -104,9 +104,9 @@ fn (mut s Server) handle_ping() {
 
 // serve_client accepts incoming connection and sets up the callbacks
 fn (mut s Server) serve_client(mut c Client) ! {
-	c.logger.debug('server-> Start serve client ($c.id)')
+	c.logger.debug('server-> Start serve client (${c.id})')
 	defer {
-		c.logger.debug('server-> End serve client ($c.id)')
+		c.logger.debug('server-> End serve client (${c.id})')
 	}
 	mut handshake_response, mut server_client := s.handle_server_handshake(mut c) or { return err }
 	accept := s.send_connect_event(mut server_client) or { return err }
