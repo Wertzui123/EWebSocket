@@ -40,28 +40,28 @@ struct ConnectEventHandler {
 	ref      voidptr // referenced object
 }
 
-pub type AcceptClientFn = fn (mut c ServerClient) ?bool
+pub type AcceptClientFn = fn (mut c ServerClient) !bool
 
-pub type AcceptClientFn2 = fn (mut c ServerClient, v voidptr) ?bool
+pub type AcceptClientFn2 = fn (mut c ServerClient, v voidptr) !bool
 
-pub type SocketMessageFn = fn (mut c Client, msg &Message) ?
+pub type SocketMessageFn = fn (mut c Client, msg &Message) !
 
-pub type SocketMessageFn2 = fn (mut c Client, msg &Message, v voidptr) ?
+pub type SocketMessageFn2 = fn (mut c Client, msg &Message, v voidptr) !
 
-pub type SocketErrorFn = fn (mut c Client, err string) ?
+pub type SocketErrorFn = fn (mut c Client, err string) !
 
-pub type SocketErrorFn2 = fn (mut c Client, err string, v voidptr) ?
+pub type SocketErrorFn2 = fn (mut c Client, err string, v voidptr) !
 
-pub type SocketOpenFn = fn (mut c Client) ?
+pub type SocketOpenFn = fn (mut c Client) !
 
-pub type SocketOpenFn2 = fn (mut c Client, v voidptr) ?
+pub type SocketOpenFn2 = fn (mut c Client, v voidptr) !
 
-pub type SocketCloseFn = fn (mut c Client, code int, reason string) ?
+pub type SocketCloseFn = fn (mut c Client, code int, reason string) !
 
-pub type SocketCloseFn2 = fn (mut c Client, code int, reason string, v voidptr) ?
+pub type SocketCloseFn2 = fn (mut c Client, code int, reason string, v voidptr) !
 
 // on_connect registers a callback when client connects to the server
-pub fn (mut s Server) on_connect(fun AcceptClientFn) ? {
+pub fn (mut s Server) on_connect(fun AcceptClientFn) ! {
 	if s.accept_client_callbacks.len > 0 {
 		return error('only one callback can be registered for accept client')
 	}
@@ -71,7 +71,7 @@ pub fn (mut s Server) on_connect(fun AcceptClientFn) ? {
 }
 
 // on_connect registers a callback when client connects to the server and provides a reference object
-pub fn (mut s Server) on_connect_ref(fun AcceptClientFn2, ref voidptr) ? {
+pub fn (mut s Server) on_connect_ref(fun AcceptClientFn2, ref voidptr) ! {
 	if s.accept_client_callbacks.len > 0 {
 		return error('only one callback can be registered for accept client')
 	}
@@ -180,18 +180,18 @@ pub fn (mut ws Client) on_close_ref(fun SocketCloseFn2, ref voidptr) {
 }
 
 // send_connect_event invokes the on_connect callback
-fn (mut s Server) send_connect_event(mut c ServerClient) ?bool {
+fn (mut s Server) send_connect_event(mut c ServerClient) !bool {
 	if s.accept_client_callbacks.len == 0 {
 		// If no callback all client will be accepted
 		return true
 	}
 	if s.accept_client_callbacks[0].is_ref {
 		fun := s.accept_client_callbacks[0].handler2
-		res := fun(mut c, s.accept_client_callbacks[0].ref)?
+		res := fun(mut c, s.accept_client_callbacks[0].ref)!
 		return res
 	} else {
 		fun := s.accept_client_callbacks[0].handler
-		res := fun(mut c)?
+		res := fun(mut c)!
 		return res
 	}
 }
