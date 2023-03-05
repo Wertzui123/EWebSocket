@@ -114,7 +114,7 @@ pub fn (mut ws Client) listen() ! {
 	defer {
 		ws.logger.info('Quit client listener, server(${ws.is_server})...')
 		if ws.state == .open {
-			ws.close(1000, '[force] closed by client') or {}
+			ws.close(1000, 'closed by client') or {}
 		}
 	}
 	for ws.state == .open {
