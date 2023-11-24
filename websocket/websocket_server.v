@@ -37,7 +37,7 @@ pub mut:
 // new_server instance a new websocket server on provided port and route
 pub fn new_server(family net.AddrFamily, port int, route string) &Server {
 	return &Server{
-		ls: 0
+		ls: unsafe { 0 }
 		family: family
 		port: port
 		logger: &log.Log{

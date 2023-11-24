@@ -1,6 +1,6 @@
 // websocket module implements websocket client and a websocket server
 // attribution: @thecoderr the author of original websocket client
-[manualfree]
+@[manualfree]
 module websocket
 
 import net
@@ -66,18 +66,18 @@ pub:
 // OPCode represents the supported websocket frame types
 pub enum OPCode {
 	continuation = 0x00
-	text_frame = 0x01
+	text_frame   = 0x01
 	binary_frame = 0x02
-	close = 0x08
-	ping = 0x09
-	pong = 0x0A
+	close        = 0x08
+	ping         = 0x09
+	pong         = 0x0A
 }
 
 // new_client instance a new websocket client
 pub fn new_client(address string) !&Client {
 	uri := parse_uri(address)!
 	return &Client{
-		conn: 0
+		conn: unsafe { nil }
 		is_server: false
 		ssl_conn: tlse.new_ssl_conn()
 		is_ssl: address.starts_with('wss')
