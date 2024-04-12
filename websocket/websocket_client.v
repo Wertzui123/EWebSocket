@@ -11,9 +11,7 @@ import rand
 import wertzui123.tlse
 import wertzui123.ehttp.http
 
-const (
-	empty_bytearr = []u8{} // used as empty response to avoid allocation
-)
+const empty_bytearr = []u8{} // used as empty response to avoid allocation
 
 // Client represents websocket client
 pub struct Client {
@@ -76,14 +74,14 @@ pub enum OPCode {
 // new_client instance a new websocket client
 pub fn new_client(address string) !&Client {
 	uri := parse_uri(address)!
+	mut logger := log.Log{}
+	logger.set_level(.info)
 	return &Client{
 		conn: unsafe { nil }
 		is_server: false
 		ssl_conn: tlse.new_ssl_conn()
 		is_ssl: address.starts_with('wss')
-		logger: &log.Log{
-			level: .info
-		}
+		logger: &logger
 		uri: uri
 		state: .closed
 		id: rand.uuid_v4()

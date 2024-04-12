@@ -36,13 +36,13 @@ pub mut:
 
 // new_server instance a new websocket server on provided port and route
 pub fn new_server(family net.AddrFamily, port int, route string) &Server {
+	mut logger := log.Log{}
+	logger.set_level(.info)
 	return &Server{
 		ls: unsafe { 0 }
 		family: family
 		port: port
-		logger: &log.Log{
-			level: .info
-		}
+		logger: &logger
 		state: .closed
 	}
 }
